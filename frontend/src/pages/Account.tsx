@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lock, Eye, EyeOff, Shield, FileText, Trash2, Camera, Info } from 'lucide-react';
+import { ArrowLeft, Lock, Eye, EyeOff, Shield, FileText, Trash2, Camera, Info, Pencil, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -50,6 +50,25 @@ const Account = () => {
     isOpen: false,
     announcementId: null,
     announcementTitle: '',
+  });
+
+  // État pour le modal d'édition
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    announcement: any | null;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    announcement: null,
+    isLoading: false,
+  });
+
+  // État pour les données de l'annonce en cours d'édition
+  const [editData, setEditData] = useState({
+    title: '',
+    description: '',
+    location: '',
+    status: 'perdu' as 'perdu' | 'trouvé',
   });
   const displayName = user?.username || user?.name || 'Utilisateur';
 
@@ -183,6 +202,70 @@ const Account = () => {
       announcementId: null,
       announcementTitle: '',
     });
+  };
+
+  // Fonctions pour le modal d'édition
+  const openEditModal = (announcement: any) => {
+    setEditModal({
+      isOpen: true,
+      announcement,
+      isLoading: false,
+    });
+    setEditData({
+      title: announcement.title || '',
+      description: announcement.description || '',
+      location: announcement.location || '',
+      status: announcement.status || 'perdu',
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditModal({
+      isOpen: false,
+      announcement: null,
+      isLoading: false,
+    });
+    setEditData({
+      title: '',
+      description: '',
+      location: '',
+      status: 'perdu',
+    });
+  };
+
+  const handleUpdateAnnouncement = async () => {
+    if (!editModal.announcement) return;
+
+    setEditModal((prev) => ({ ...prev, isLoading: true }));
+
+    try {
+      const response = await apiClient.put(`/announcements/${editModal.announcement.id}`, editData);
+
+      // Mettre à jour localement la liste
+      setDeclarations((prev) =>
+        prev.map((decl) =>
+          decl.id === editModal.announcement.id
+            ? { ...decl, ...editData }
+            : decl
+        )
+      );
+
+      toast({
+        title: 'Annonce modifiée',
+        description: `"${editData.title}" a été mise à jour avec succès.`,
+      });
+
+      closeEditModal();
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Une erreur est survenue.';
+      toast({
+        title: 'Erreur',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    } finally {
+      setEditModal((prev) => ({ ...prev, isLoading: false }));
+    }
   };
 
   const handleDeleteAnnouncement = async () => {
@@ -428,6 +511,14 @@ const Account = () => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => openEditModal(decl)}
+                            className="rounded-lg text-primary hover:text-primary hover:bg-primary/10"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openDeleteModal(decl.id, decl.title)}
                             className="rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
@@ -595,6 +686,121 @@ const Account = () => {
                 className="rounded-xl"
               >
                 Supprimer définitivement
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal d'édition */}
+        <Dialog open={editModal.isOpen} onOpenChange={closeEditModal}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-primary" />
+              Modifier l'annonce
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Modifiez les informations de votre annonce ci-dessous.
+            </DialogDescription>
+            
+            <div className="space-y-4 py-4">
+              {/* Titre */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Titre
+                </label>
+                <Input
+                  value={editData.title}
+                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                  placeholder="Titre de l'annonce"
+                  className="h-12 rounded-2xl"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Description
+                </label>
+                <textarea
+                  value={editData.description}
+                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                  placeholder="Description détaillée..."
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-2xl border border-input bg-card text-foreground resize-none"
+                />
+              </div>
+
+              {/* Localisation */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Localisation
+                </label>
+                <Input
+                  value={editData.location}
+                  onChange={(e) => setEditData({ ...editData, location: e.target.value })}
+                  placeholder="Lieu (ex: Dakar, Médina...)"
+                  className="h-12 rounded-2xl"
+                />
+              </div>
+
+              {/* Statut */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Statut
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditData({ ...editData, status: 'perdu' })}
+                    className={`flex-1 px-4 py-3 rounded-2xl font-medium transition-colors ${
+                      editData.status === 'perdu'
+                        ? 'bg-lost/20 text-lost border-2 border-lost'
+                        : 'bg-muted text-muted-foreground border-2 border-transparent hover:bg-muted/80'
+                    }`}
+                  >
+                    🔴 Perdu
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditData({ ...editData, status: 'trouvé' })}
+                    className={`flex-1 px-4 py-3 rounded-2xl font-medium transition-colors ${
+                      editData.status === 'trouvé'
+                        ? 'bg-found/20 text-found border-2 border-found'
+                        : 'bg-muted text-muted-foreground border-2 border-transparent hover:bg-muted/80'
+                    }`}
+                  >
+                    🟢 Trouvé
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={closeEditModal}
+                className="rounded-xl"
+                disabled={editModal.isLoading}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Annuler
+              </Button>
+              <Button
+                onClick={handleUpdateAnnouncement}
+                className="rounded-xl bg-primary hover:bg-primary/90"
+                disabled={editModal.isLoading}
+              >
+                {editModal.isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Sauvegarde...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Sauvegarder
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
