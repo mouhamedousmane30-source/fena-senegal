@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/Post'); // On importe le modèle qu'on a créé ensemble
+const Post = require('../models/post'); // On importe le modèle qu'on a créé ensemble
 
 // @route   POST /api/posts
 // @desc    Créer une nouvelle annonce (objet, personne ou animal)
