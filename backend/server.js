@@ -11,7 +11,19 @@ connectDB();
 const app = express();
 
 // 2. Middlewares cruciaux
-app.use(cors()); // Autorise ton frontend à appeler le backend
+// CORS configuration - Autorise localhost en dev et Vercel en production
+const corsOptions = {
+  origin: [
+    'http://localhost:8082',
+    'http://localhost:3000',
+    'https://fena-senegal.vercel.app',
+    process.env.FRONTEND_URL // URL personnalisée si configurée
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 app.use(express.json()); // Permet de lire le JSON envoyé par apiClient.post()
 
 // 3. Déclaration des routes avec le préfixe /api
