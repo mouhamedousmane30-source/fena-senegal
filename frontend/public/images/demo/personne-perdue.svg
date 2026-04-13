@@ -1,0 +1,25 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#FEF5E7"/>
+  
+  <!-- Alert badge -->
+  <circle cx="340" cy="60" r="40" fill="#DC2626"/>
+  <text x="340" y="65" text-anchor="middle" font-size="32" font-weight="bold" fill="white">!</text>
+  
+  <!-- Head -->
+  <circle cx="200" cy="100" r="45" fill="#D4A574"/>
+  
+  <!-- Body -->
+  <rect x="170" y="155" width="60" height="80" fill="#3B82F6" rx="10"/>
+  
+  <!-- Arms -->
+  <rect x="100" y="170" width="70" height="25" fill="#D4A574" rx="12"/>
+  <rect x="230" y="170" width="70" height="25" fill="#D4A574" rx="12"/>
+  
+  <!-- Legs -->
+  <rect x="175" y="240" width="20" height="70" fill="#2C2C2C" rx="10"/>
+  <rect x="205" y="240" width="20" height="70" fill="#2C2C2C" rx="10"/>
+  
+  <!-- Text -->
+  <text x="200" y="340" text-anchor="middle" font-size="28" font-weight="bold" fill="#DC2626">PERSONNE PERDUE</text>
+</svg>

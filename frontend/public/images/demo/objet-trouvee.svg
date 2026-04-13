@@ -1,0 +1,35 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#E8F5E9"/>
+  
+  <!-- Check badge -->
+  <circle cx="340" cy="60" r="40" fill="#22C55E"/>
+  <text x="345" y="75" text-anchor="middle" font-size="40" font-weight="bold" fill="white">✓</text>
+  
+  <!-- Phone -->
+  <rect x="140" y="100" width="120" height="200" fill="#000" rx="15" stroke="#666" stroke-width="2"/>
+  
+  <!-- Screen -->
+  <rect x="150" y="115" width="100" height="170" fill="#065F46" rx="10"/>
+  
+  <!-- Apps (dots on screen) -->
+  <circle cx="170" cy="135" r="8" fill="#10B981"/>
+  <circle cx="200" cy="135" r="8" fill="#34D399"/>
+  <circle cx="230" cy="135" r="8" fill="#6EE7B7"/>
+  
+  <circle cx="170" cy="170" r="8" fill="#10B981"/>
+  <circle cx="200" cy="170" r="8" fill="#34D399"/>
+  <circle cx="230" cy="170" r="8" fill="#6EE7B7"/>
+  
+  <!-- Speaker/Notch -->
+  <rect x="180" y="118" width="40" height="5" fill="#111" rx="2"/>
+  
+  <!-- Home button -->
+  <circle cx="200" cy="290" r="10" fill="#333"/>
+  
+  <!-- Shine effect (found indicator) -->
+  <circle cx="180" cy="150" r="15" fill="#FFD60A" opacity="0.6"/>
+  
+  <!-- Text -->
+  <text x="200" y="340" text-anchor="middle" font-size="28" font-weight="bold" fill="#22C55E">OBJET TROUVÉ</text>
+</svg>
