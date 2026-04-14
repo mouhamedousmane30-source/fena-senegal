@@ -226,6 +226,7 @@ router.get('/my', async (req, res) => {
     console.log('GET /announcements/my - User:', req.user);
     
     if (!req.user || !req.user.id) {
+      console.log('GET /announcements/my - ERREUR: req.user ou req.user.id manquant');
       return res.status(401).json({
         success: false,
         message: 'Utilisateur non authentifié'
@@ -233,7 +234,18 @@ router.get('/my', async (req, res) => {
     }
     
     const userId = req.user.id;
-    console.log('Recherche des annonces pour userId:', userId);
+    console.log('GET /announcements/my - Recherche pour userId:', userId);
+    
+    // Vérifier que le modèle Announcement est bien défini
+    if (!Announcement) {
+      console.error('GET /announcements/my - ERREUR: Modèle Announcement non défini');
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur interne: modèle non disponible'
+      });
+    }
+    
+    console.log('GET /announcements/my - Exécution de la requête MongoDB...');
     
     const announcements = await Announcement.find({ 
       user: userId,
@@ -242,9 +254,9 @@ router.get('/my', async (req, res) => {
     .sort({ createdAt: -1 })
     .select('-__v');
     
-    console.log('Annonces trouvées:', announcements.length);
+    console.log('GET /announcements/my - Annonces trouvées:', announcements.length);
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       announcements: announcements.map(announcement => ({
         id: announcement._id,
@@ -260,13 +272,22 @@ router.get('/my', async (req, res) => {
         views: announcement.views,
         isActive: announcement.isActive
       }))
-    });
+    };
+    
+    console.log('GET /announcements/my - Envoi de la réponse');
+    res.status(200).json(responseData);
+    
   } catch (error) {
-    console.error('Erreur dans GET /announcements/my:', error);
+    console.error('GET /announcements/my - ERREUR CAPTURÉE:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({
       success: false,
       message: 'Erreur serveur lors de la récupération des annonces',
-      error: error.message
+      error: error.message,
+      errorName: error.name
     });
   }
 });
