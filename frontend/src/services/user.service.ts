@@ -8,6 +8,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
   profileImage?: string;
   bio?: string;
   phone?: string;
@@ -17,6 +20,9 @@ export interface User {
 
 export interface UpdateProfileRequest {
   name?: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
   bio?: string;
   phone?: string;
   profileImage?: File;
@@ -35,6 +41,9 @@ export const userService = {
     if (data.profileImage) {
       const formData = new FormData();
       if (data.name) formData.append('name', data.name);
+      if (data.firstName) formData.append('firstName', data.firstName);
+      if (data.lastName) formData.append('lastName', data.lastName);
+      if (data.username) formData.append('username', data.username);
       if (data.bio) formData.append('bio', data.bio);
       if (data.phone) formData.append('phone', data.phone);
       formData.append('profileImage', data.profileImage);
@@ -47,6 +56,9 @@ export const userService = {
 
     return apiClient.put('/user/profile', {
       name: data.name,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      username: data.username,
       bio: data.bio,
       phone: data.phone,
     });

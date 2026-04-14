@@ -43,7 +43,7 @@ router.get('/profile', async (req, res) => {
 // PUT /api/user/profile - Mettre à jour le profil utilisateur
 router.put('/profile', async (req, res) => {
   try {
-    const { username, email, profileImage, privacy } = req.body;
+    const { username, firstName, lastName, name, email, profileImage, privacy } = req.body;
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -65,10 +65,13 @@ router.put('/profile', async (req, res) => {
       user.email = email.toLowerCase();
     }
 
-    // Mettre à jour les autres champs
-    if (username) user.username = username.trim();
-    if (profileImage) user.profileImage = profileImage;
-    if (privacy) user.privacy = { ...user.privacy, ...privacy };
+    // Mettre à jour les champs du nom
+    if (firstName !== undefined) user.firstName = firstName.trim();
+    if (lastName !== undefined) user.lastName = lastName.trim();
+    if (name !== undefined) user.name = name.trim();
+    if (username !== undefined) user.username = username.trim();
+    if (profileImage !== undefined) user.profileImage = profileImage;
+    if (privacy !== undefined) user.privacy = { ...user.privacy, ...privacy };
 
     await user.save();
 
@@ -78,6 +81,9 @@ router.put('/profile', async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: user.name,
         email: user.email,
         createdAt: user.createdAt,
         profileImage: user.profileImage,

@@ -966,17 +966,18 @@ const Account = () => {
                 setCompleteProfileModal({ ...completeProfileModal, isLoading: true });
                 try {
                   const fullName = `${profileData.firstName.trim()} ${profileData.lastName.trim()}`;
-                  await userService.updateProfile({
+                  const response = await userService.updateProfile({
                     firstName: profileData.firstName.trim(),
                     lastName: profileData.lastName.trim(),
                     name: fullName,
                     username: fullName,
                   });
+                  // Utiliser la réponse de l'API pour mettre à jour le state
                   updateUser({
-                    firstName: profileData.firstName.trim(),
-                    lastName: profileData.lastName.trim(),
-                    name: fullName,
-                    username: fullName,
+                    firstName: response.firstName,
+                    lastName: response.lastName,
+                    name: response.name,
+                    username: response.username,
                   });
                   toast({
                     title: 'Profil mis à jour',
