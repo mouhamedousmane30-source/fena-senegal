@@ -9,7 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, pass: string, rememberMe: boolean) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   updateUser: (data: Record<string, unknown>) => void;
   logout: () => void;
 }
@@ -100,9 +100,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (firstName: string, lastName: string, email: string, password: string) => {
     try {
-      const data = await authService.register({ username, email, password });
+      const data = await authService.register({ firstName, lastName, email, password });
 
       // Après inscription, on garde la session active par défaut.
       apiClient.setTokens(data.token, data.refreshToken, 'local');

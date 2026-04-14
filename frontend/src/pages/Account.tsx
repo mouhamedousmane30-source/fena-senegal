@@ -70,12 +70,27 @@ const Account = () => {
     location: '',
     status: 'perdu' as 'perdu' | 'trouvé',
   });
+
+  // État pour le modal de complétion du profil (utilisateurs existants)
+  const [completeProfileModal, setCompleteProfileModal] = useState({
+    isOpen: false,
+    isLoading: false,
+  });
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    lastName: '',
+  });
+
   const displayName = user?.username || user?.name || 'Utilisateur';
 
   useEffect(() => {
     setProfileImage(user?.profileImage);
     if (user?.privacy) {
       setPrivacySettings((prev) => ({ ...prev, ...user.privacy }));
+    }
+    // Vérifier si l'utilisateur doit compléter son profil (pas de prénom/nom)
+    if (user && !user.firstName && !user.lastName && !user.name?.includes(' ')) {
+      setCompleteProfileModal({ isOpen: true, isLoading: false });
     }
   }, [user]);
 
@@ -897,6 +912,94 @@ const Account = () => {
           </form>
         )}
       </div>
+
+      {/* Modal pour compléter le profil (utilisateurs existants) */}
+      <Dialog open={completeProfileModal.isOpen} onOpenChange={(open) => setCompleteProfileModal({ ...completeProfileModal, isOpen: open })}>
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogTitle className="text-xl font-bold">Complétez votre profil</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Pour améliorer votre expérience, veuillez ajouter votre nom complet.
+          </DialogDescription>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Prénom *</label>
+                <Input
+                  value={profileData.firstName}
+                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  placeholder="Votre prénom"
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Nom *</label>
+                <Input
+                  value={profileData.lastName}
+                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                  placeholder="Votre nom"
+                  className="h-12 rounded-xl"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCompleteProfileModal({ ...completeProfileModal, isOpen: false })}
+              className="rounded-xl"
+            >
+              Plus tard
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!profileData.firstName || !profileData.lastName) {
+                  toast({
+                    title: 'Champs requis',
+                    description: 'Veuillez entrer votre prénom et votre nom',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+                
+                setCompleteProfileModal({ ...completeProfileModal, isLoading: true });
+                try {
+                  const fullName = `${profileData.firstName.trim()} ${profileData.lastName.trim()}`;
+                  await userService.updateProfile({
+                    firstName: profileData.firstName.trim(),
+                    lastName: profileData.lastName.trim(),
+                    name: fullName,
+                    username: fullName,
+                  });
+                  updateUser({
+                    firstName: profileData.firstName.trim(),
+                    lastName: profileData.lastName.trim(),
+                    name: fullName,
+                    username: fullName,
+                  });
+                  toast({
+                    title: 'Profil mis à jour',
+                    description: 'Votre nom complet a été enregistré avec succès.',
+                  });
+                  setCompleteProfileModal({ isOpen: false, isLoading: false });
+                } catch (error) {
+                  toast({
+                    title: 'Erreur',
+                    description: 'Impossible de mettre à jour votre profil',
+                    variant: 'destructive',
+                  });
+                  setCompleteProfileModal({ ...completeProfileModal, isLoading: false });
+                }
+              }}
+              disabled={completeProfileModal.isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl"
+            >
+              {completeProfileModal.isLoading ? 'Enregistrement...' : 'Enregistrer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

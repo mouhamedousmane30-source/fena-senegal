@@ -8,20 +8,20 @@ const auth = require('../config/auth');
 // --- ROUTE D'INSCRIPTION ---
 router.post('/register', async (req, res) => {
   try {
-    // 📨 DEBUG : Afficher exactement ce qui est reçu
-    console.log("📨 REGISTER - Données reçues:", req.body);
+    // DEBUG : Afficher exactement ce qui est reçu
+    console.log("REGISTER - Données reçues:", req.body);
 
-    const { username, email, password } = req.body;
+    const { username, firstName, lastName, email, password } = req.body;
 
-    // ✅ ÉTAPE 1 : Validation des champs obligatoires
+    // ÉTAPE 1 : Validation des champs obligatoires
     if (!username || username.trim() === '') {
       return res.status(400).json({ type: 'VALIDATION_ERROR', message: "Le champ 'username' est obligatoire." });
     }
-    if (!email || email.trim() === '') {
-      return res.status(400).json({ type: 'VALIDATION_ERROR', message: "Le champ 'email' est obligatoire." });
+    if (!firstName || firstName.trim() === '') {
+      return res.status(400).json({ type: 'VALIDATION_ERROR', message: "Le prénom est obligatoire." });
     }
-    if (!password || password.trim() === '') {
-      return res.status(400).json({ type: 'VALIDATION_ERROR', message: "Le champ 'password' est obligatoire." });
+    if (!lastName || lastName.trim() === '') {
+      return res.status(400).json({ type: 'VALIDATION_ERROR', message: "Le nom est obligatoire." });
     }
 
     console.log(`✅ Validation OK: username="${username}", email="${email}"`);
@@ -36,8 +36,15 @@ router.post('/register', async (req, res) => {
     console.log("✅ Email unique - Pas de doublon détecté");
 
     // ✅ ÉTAPE 3 : Créer l'utilisateur (le mot de passe sera haché automatiquement par le middleware pre('save'))
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const fullName = `${trimmedFirstName} ${trimmedLastName}`;
+    
     const newUser = new User({ 
-      username: username.trim(), 
+      username: fullName,
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      name: fullName,
       email: email.toLowerCase().trim(), 
       password 
     });

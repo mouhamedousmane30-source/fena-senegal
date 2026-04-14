@@ -7,6 +7,16 @@ const userSchema = new mongoose.Schema({
     required: [true, "Le nom d'utilisateur est obligatoire"],
     trim: true
   },
+  firstName: {
+    type: String,
+    default: null,
+    trim: true
+  },
+  lastName: {
+    type: String,
+    default: null,
+    trim: true
+  },
   name: {
     type: String,
     default: null,

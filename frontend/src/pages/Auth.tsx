@@ -17,7 +17,8 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -64,12 +65,12 @@ const Auth = () => {
       if (isLogin) {
         await login(email, password, rememberMe);
       } else {
-        if (!name) {
-          setError('Veuillez entrer votre nom');
+        if (!firstName || !lastName) {
+          setError('Veuillez entrer votre prénom et votre nom');
           setIsLoading(false);
           return;
         }
-        await register(name, email, password);
+        await register(firstName, lastName, email, password);
       }
       
       toast({
@@ -200,15 +201,24 @@ const Auth = () => {
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {!isLogin && (
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Nom complet</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Prénom *</label>
                       <Input
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="Votre nom"
-                        className="pl-11 h-12 rounded-2xl"
+                        value={firstName}
+                        onChange={e => setFirstName(e.target.value)}
+                        placeholder="Prénom"
+                        className="h-12 rounded-2xl"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Nom *</label>
+                      <Input
+                        value={lastName}
+                        onChange={e => setLastName(e.target.value)}
+                        placeholder="Nom"
+                        className="h-12 rounded-2xl"
                         required
                       />
                     </div>
@@ -346,7 +356,8 @@ const Auth = () => {
                     setInvalidLogin(false);
                     setPassword('');
                     setConfirmPassword('');
-                    setName('');
+                    setFirstName('');
+                    setLastName('');
                     
                     // Si on revient en mode login, restaurer les identifiants sauvegardés
                     if (newIsLogin) {
