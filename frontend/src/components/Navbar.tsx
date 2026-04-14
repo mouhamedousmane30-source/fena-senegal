@@ -15,6 +15,7 @@ const Navbar = () => {
     { to: '/', label: 'Accueil' },
     { to: '/annonces', label: 'Annonces' },
     { to: '/declarer', label: 'Déclarer' },
+    { to: '/about', label: 'À propos' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
