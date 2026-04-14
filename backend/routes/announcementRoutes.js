@@ -53,6 +53,63 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// GET /api/announcements/:id - Obtenir une annonce spécifique (PUBLIC - sans authentification)
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validation de l'ID
+    if (!id || id === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        message: 'ID d\'annonce invalide'
+      });
+    }
+
+    const announcement = await Announcement.findById(id)
+      .populate('user', 'username email name verified')
+      .select('-__v');
+
+    if (!announcement) {
+      return res.status(404).json({
+        success: false,
+        message: 'Annonce non trouvée'
+      });
+    }
+
+    // Incrémenter le nombre de vues
+    await Announcement.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
+    res.status(200).json({
+      success: true,
+      announcement: {
+        id: announcement._id,
+        title: announcement.title,
+        description: announcement.description,
+        status: announcement.status,
+        location: announcement.location,
+        category: announcement.category,
+        images: announcement.images,
+        contactInfo: announcement.contactInfo,
+        coordinates: announcement.coordinates,
+        date: announcement.createdAt,
+        views: announcement.views + 1,
+        user: announcement.user ? {
+          username: announcement.user.username,
+          name: announcement.user.name,
+          verified: announcement.user.verified
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error('Erreur dans GET /announcements/:id:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur lors de la récupération de l\'annonce'
+    });
+  }
+});
+
 // Middleware d'authentification pour les routes protégées
 router.use(auth);
 
@@ -270,63 +327,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur serveur lors de la suppression de l\'annonce'
-    });
-  }
-});
-
-// GET /api/announcements/:id - Obtenir une annonce spécifique
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Validation de l'ID
-    if (!id || id === 'undefined') {
-      return res.status(400).json({
-        success: false,
-        message: 'ID d\'annonce invalide'
-      });
-    }
-
-    const announcement = await Announcement.findById(id)
-      .populate('user', 'username email name verified')
-      .select('-__v');
-
-    if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: 'Annonce non trouvée'
-      });
-    }
-
-    // Incrémenter le nombre de vues
-    await Announcement.findByIdAndUpdate(id, { $inc: { views: 1 } });
-
-    res.status(200).json({
-      success: true,
-      announcement: {
-        id: announcement._id,
-        title: announcement.title,
-        description: announcement.description,
-        status: announcement.status,
-        location: announcement.location,
-        category: announcement.category,
-        images: announcement.images,
-        contactInfo: announcement.contactInfo,
-        coordinates: announcement.coordinates,
-        date: announcement.createdAt,
-        views: announcement.views + 1,
-        user: announcement.user ? {
-          username: announcement.user.username,
-          name: announcement.user.name,
-          verified: announcement.user.verified
-        } : null
-      }
-    });
-  } catch (error) {
-    console.error('Erreur dans GET /announcements/:id:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur serveur lors de la récupération de l\'annonce'
     });
   }
 });
