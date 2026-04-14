@@ -13,9 +13,10 @@ const categoryIcons = {
 const AnnouncementCard = ({ announcement }: { announcement: any }) => {
   const Icon = categoryIcons[announcement.category as keyof typeof categoryIcons] || Package;
 
-  // Configuration du partage WhatsApp
+  // Configuration du partage WhatsApp avec lien de l'annonce
+  const announcementUrl = `${window.location.origin}/annonce/${announcement.id}`;
   const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
-    `🔍 ${announcement.status === 'perdu' ? 'PERDU' : 'TROUVÉ'}: ${announcement.title} à ${announcement.location}. Voir sur Feñ Na Sénégal.`
+    `🔍 ${announcement.status === 'perdu' ? 'PERDU' : 'TROUVÉ'}: ${announcement.title} à ${announcement.location}.\n\n📎 Voir l'annonce: ${announcementUrl}\n\nVia Feñ Na Sénégal`
   )}`;
 
   const handleWhatsappShare = (e: React.MouseEvent) => {

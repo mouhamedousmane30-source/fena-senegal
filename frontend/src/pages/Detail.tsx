@@ -119,7 +119,10 @@ const Detail = () => {
 
   // Préparation des liens de contact
   const purePhone = annonce.contactInfo?.phone?.replace(/\s/g, '') || ''; // Nettoie les espaces
-  const whatsappMsg = encodeURIComponent(`Bonjour, je vous contacte via Feñ Na Sénégal concernant votre annonce : "${annonce.title}".`);
+  const announcementUrl = `${window.location.origin}/annonce/${annonce.id}`;
+  const whatsappMsg = encodeURIComponent(
+    `Bonjour, je vous contacte via Feñ Na Sénégal concernant votre annonce : "${annonce.title}".\n\n📎 Lien de l'annonce: ${announcementUrl}`
+  );
   const whatsappUrl = `https://wa.me/${purePhone}?text=${whatsappMsg}`;
 
   return (
