@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
+const { trackPageView } = require('./middleware/viewTracker.js');
 
 dotenv.config();
 
@@ -11,6 +12,9 @@ connectDB();
 const app = express();
 
 // 2. Middlewares cruciaux
+// Tracking des vues du site (avant CORS pour capturer toutes les requêtes)
+app.use(trackPageView);
+
 // CORS configuration - Autorise localhost en dev et Vercel en production
 const corsOptions = {
   origin: [

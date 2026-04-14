@@ -4,6 +4,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const auth = require('../config/auth');
+const Notification = require('../models/Notification');
 
 // --- ROUTE D'INSCRIPTION ---
 router.post('/register', async (req, res) => {
@@ -51,6 +52,15 @@ router.post('/register', async (req, res) => {
     
     await newUser.save();
     console.log(`✅ Utilisateur créé dans MongoDB: ${newUser._id}`);
+
+    // Créer une notification pour les admins
+    try {
+      await Notification.createUserRegisteredNotification(newUser);
+      console.log('🔔 Notification créée pour le nouvel utilisateur');
+    } catch (notifError) {
+      console.error('Erreur lors de la création de la notification:', notifError);
+      // Ne pas bloquer l'inscription si la notification échoue
+    }
 
     // ✅ ÉTAPE 4 : Vérifier que JWT_SECRET existe
     if (!process.env.JWT_SECRET) {

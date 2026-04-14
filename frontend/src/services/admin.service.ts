@@ -72,6 +72,48 @@ export interface AdminReports {
   }>;
 }
 
+export interface SiteViews {
+  totalPageViews: number;
+  totalUniqueVisitors: number;
+  todayPageViews: number;
+  todayUniqueVisitors: number;
+  last7DaysPageViews: number;
+  last7DaysUniqueVisitors: number;
+}
+
+export interface Notification {
+  _id: string;
+  type: 'user_registered' | 'announcement_created' | 'announcement_reported' | 'announcement_deleted' | 'user_deleted' | 'system';
+  title: string;
+  message: string;
+  data: {
+    userId?: string;
+    announcementId?: string;
+    additionalInfo?: any;
+  };
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high';
+  link?: string;
+  createdAt: string;
+}
+
+export interface SiteStatsResponse {
+  totals: {
+    totalPageViews: number;
+    totalUniqueVisitors: number;
+  };
+  today: {
+    pageViews: number;
+    uniqueVisitors: number;
+    date: string;
+  };
+  period: Array<{
+    date: string;
+    pageViews: number;
+    uniqueVisitors: number;
+  }>;
+}
+
 export const adminService = {
   // Statistiques générales
   async getStats(): Promise<{ success: boolean; stats: AdminStats }> {
@@ -169,6 +211,60 @@ export const adminService = {
   // Rapports et analyses
   async getReports(period: number = 30): Promise<{ success: boolean; reports: AdminReports }> {
     const response = await apiClient.get(`/admin/reports?period=${period}`) as { success: boolean; reports: AdminReports };
+    return response;
+  },
+
+  // ============================================
+  // STATS DE VUES DU SITE
+  // ============================================
+  
+  async getSiteStats(period: number = 7): Promise<{ success: boolean; stats: SiteStatsResponse }> {
+    const response = await apiClient.get(`/admin/site-stats?period=${period}`) as { success: boolean; stats: SiteStatsResponse };
+    return response;
+  },
+
+  // ============================================
+  // NOTIFICATIONS
+  // ============================================
+  
+  async getNotifications(options?: { limit?: number; unreadOnly?: boolean }): Promise<{ 
+    success: boolean; 
+    notifications: Notification[]; 
+    unreadCount: number 
+  }> {
+    const params = new URLSearchParams();
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.unreadOnly) params.append('unreadOnly', 'true');
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const response = await apiClient.get(`/admin/notifications${queryString}`) as { 
+      success: boolean; 
+      notifications: Notification[]; 
+      unreadCount: number 
+    };
+    return response;
+  },
+
+  async getUnreadNotificationsCount(): Promise<{ success: boolean; count: number }> {
+    const response = await apiClient.get('/admin/notifications/unread-count') as { success: boolean; count: number };
+    return response;
+  },
+
+  async markNotificationAsRead(notificationId: string): Promise<{ success: boolean; notification: Notification }> {
+    const response = await apiClient.put(`/admin/notifications/${notificationId}/read`, {}) as { 
+      success: boolean; 
+      notification: Notification 
+    };
+    return response;
+  },
+
+  async markAllNotificationsAsRead(): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.put('/admin/notifications/read-all', {}) as { success: boolean; message: string };
+    return response;
+  },
+
+  async deleteNotification(notificationId: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.delete(`/admin/notifications/${notificationId}`) as { success: boolean; message: string };
     return response;
   }
 };

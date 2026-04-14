@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, FileText, Users, AlertCircle, LogOut, Menu, X, MapPin, ExternalLink, ChevronLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { BarChart3, FileText, Users, AlertCircle, LogOut, Menu, MapPin, ExternalLink, ChevronLeft, Bell, Check, Trash2, UserPlus, FilePlus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { adminService, type Notification } from '@/services/admin.service';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -12,8 +14,14 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const navItems = [
     { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -23,6 +31,128 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Charger les notifications
+  const loadNotifications = async () => {
+    try {
+      setLoadingNotifications(true);
+      const response = await adminService.getNotifications({ limit: 20 });
+      if (response.success) {
+        setNotifications(response.notifications);
+        setUnreadCount(response.unreadCount);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications:', error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  // Charger le nombre de notifications non lues
+  const loadUnreadCount = async () => {
+    try {
+      const response = await adminService.getUnreadNotificationsCount();
+      if (response.success) {
+        setUnreadCount(response.count);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du nombre de notifications:', error);
+    }
+  };
+
+  // Marquer une notification comme lue
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await adminService.markNotificationAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Erreur lors du marquage de la notification:', error);
+    }
+  };
+
+  // Marquer toutes comme lues
+  const markAllAsRead = async () => {
+    try {
+      await adminService.markAllNotificationsAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      toast({
+        title: 'Notifications',
+        description: 'Toutes les notifications ont été marquées comme lues',
+      });
+    } catch (error) {
+      console.error('Erreur lors du marquage des notifications:', error);
+    }
+  };
+
+  // Supprimer une notification
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      await adminService.deleteNotification(notificationId);
+      setNotifications(prev => prev.filter(n => n._id !== notificationId));
+      const notification = notifications.find(n => n._id === notificationId);
+      if (notification && !notification.isRead) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la notification:', error);
+    }
+  };
+
+  // Naviguer vers le lien de la notification
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.isRead) {
+      markAsRead(notification._id);
+    }
+    if (notification.link) {
+      navigate(notification.link);
+      setNotificationsOpen(false);
+    }
+  };
+
+  // Obtenir l'icône selon le type de notification
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'user_registered':
+        return <UserPlus className="w-4 h-4" />;
+      case 'announcement_created':
+        return <FilePlus className="w-4 h-4" />;
+      case 'announcement_reported':
+      case 'announcement_deleted':
+      case 'user_deleted':
+        return <AlertTriangle className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
+    }
+  };
+
+  // Obtenir la couleur selon la priorité
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-blue-500';
+    }
+  };
+
+  // Charger les notifications au montage
+  useEffect(() => {
+    loadNotifications();
+    loadUnreadCount();
+    
+    // Rafraîchir toutes les 30 secondes
+    const interval = setInterval(() => {
+      loadUnreadCount();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -40,12 +170,125 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
             {sidebarOpen && <span className="font-bold text-sm">Feñ Na</span>}
           </Link>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
-          >
-            <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${!sidebarOpen && 'rotate-180'}`} />
-          </button>
+          
+          {/* Bouton Notifications (Desktop) */}
+          <div className="flex items-center gap-2">
+            <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+              <SheetTrigger asChild>
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors relative">
+                  <Bell className="w-5 h-5 text-muted-foreground" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-96 p-0">
+                <SheetHeader className="h-16 border-b border-border/50 px-6 flex items-center justify-between">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    <span>Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </SheetTitle>
+                </SheetHeader>
+                
+                <div className="flex items-center justify-between px-4 py-2 border-b border-border/50">
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                    disabled={unreadCount === 0}
+                  >
+                    <Check className="w-4 h-4" />
+                    Tout marquer comme lu
+                  </button>
+                  <button
+                    onClick={() => loadNotifications()}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Rafraîchir
+                  </button>
+                </div>
+                
+                <div className="overflow-y-auto h-[calc(100vh-140px)]">
+                  {loadingNotifications ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : notifications.length > 0 ? (
+                    <div className="divide-y divide-border/50">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification._id}
+                          className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                            !notification.isRead ? 'bg-primary/5' : ''
+                          }`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg ${getPriorityColor(notification.priority)} text-white`}>
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-foreground">
+                                {notification.title}
+                              </p>
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(notification.createdAt).toLocaleString('fr-FR')}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              {!notification.isRead && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsRead(notification._id);
+                                  }}
+                                  className="p-1 hover:bg-muted rounded"
+                                  title="Marquer comme lu"
+                                >
+                                  <Check className="w-4 h-4 text-primary" />
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(notification._id);
+                                }}
+                                className="p-1 hover:bg-muted rounded"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Bell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">Aucune notification</p>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+            
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-muted rounded-lg transition-colors hidden lg:block"
+            >
+              <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${!sidebarOpen && 'rotate-180'}`} />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}

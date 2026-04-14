@@ -1,6 +1,8 @@
 const express = require('express');
 const auth = require('../config/auth');
 const Announcement = require('../models/Announcement');
+const Notification = require('../models/Notification');
+const User = require('../models/User');
 const router = express.Router();
 
 // GET /api/announcements/public - Obtenir toutes les annonces publiques (sans authentification)
@@ -166,6 +168,16 @@ router.post('/', async (req, res) => {
     console.log('Tentative de sauvegarde de l\'annonce...');
     const savedAnnouncement = await newAnnouncement.save();
     console.log('Annonce sauvegardée avec succès:', savedAnnouncement._id);
+
+    // Créer une notification pour les admins
+    try {
+      const user = await User.findById(req.user.id).select('username email');
+      await Notification.createAnnouncementCreatedNotification(savedAnnouncement, user);
+      console.log('🔔 Notification créée pour la nouvelle annonce');
+    } catch (notifError) {
+      console.error('Erreur lors de la création de la notification:', notifError);
+      // Ne pas bloquer la création si la notification échoue
+    }
 
     res.status(201).json({
       success: true,
