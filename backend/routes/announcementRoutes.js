@@ -223,12 +223,26 @@ router.post('/', async (req, res) => {
 // GET /api/announcements/my - Obtenir les annonces de l'utilisateur connecté
 router.get('/my', async (req, res) => {
   try {
+    console.log('GET /announcements/my - User:', req.user);
+    
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Utilisateur non authentifié'
+      });
+    }
+    
+    const userId = req.user.id;
+    console.log('Recherche des annonces pour userId:', userId);
+    
     const announcements = await Announcement.find({ 
-      user: req.user.id,
+      user: userId,
       isActive: true 
     })
     .sort({ createdAt: -1 })
     .select('-__v');
+    
+    console.log('Annonces trouvées:', announcements.length);
 
     res.status(200).json({
       success: true,
@@ -251,7 +265,8 @@ router.get('/my', async (req, res) => {
     console.error('Erreur dans GET /announcements/my:', error);
     res.status(500).json({
       success: false,
-      message: 'Erreur serveur lors de la récupération des annonces'
+      message: 'Erreur serveur lors de la récupération des annonces',
+      error: error.message
     });
   }
 });
