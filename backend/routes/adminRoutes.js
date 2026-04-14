@@ -139,7 +139,7 @@ router.put('/users/:id/role', auth, adminAuth, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       id,
       { role },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).select('-password -passwordResetToken -passwordResetExpires');
 
     if (!user) {
@@ -172,7 +172,7 @@ router.put('/users/:id/verify', auth, adminAuth, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       id,
       { verified },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).select('-password -passwordResetToken -passwordResetExpires');
 
     if (!user) {
@@ -292,7 +292,7 @@ router.put('/announcements/:id/status', auth, adminAuth, async (req, res) => {
     const announcement = await Announcement.findByIdAndUpdate(
       id,
       { status, isActive },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).populate('user', 'username email');
 
     if (!announcement) {

@@ -315,7 +315,7 @@ router.put('/:id', async (req, res) => {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       id,
       { ...updateData },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     res.status(200).json({

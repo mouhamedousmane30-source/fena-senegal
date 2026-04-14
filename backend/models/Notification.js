@@ -75,7 +75,7 @@ notificationSchema.statics.markAsRead = async function(notificationId, userId) {
     query.$or = [{ recipient: userId }, { recipient: null }];
   }
   
-  return await this.findOneAndUpdate(query, update, { new: true });
+  return await this.findOneAndUpdate(query, update, { returnDocument: 'after' });
 };
 
 // Méthode pour marquer toutes comme lues
