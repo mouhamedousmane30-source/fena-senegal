@@ -3,6 +3,7 @@ import { ArrowLeft, Search, ChevronDown, ChevronUp, Mail, Phone, MapPin, Clock }
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
+import { HowItWorksIllustration, ContactIllustration } from '@/components/HowItWorks';
 
 interface FAQItem {
   id: number;
@@ -126,6 +127,19 @@ const Help = () => {
           </p>
         </div>
 
+        {/* How It Works Illustration */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+              Comment ça marche ?
+            </h2>
+            <p className="text-muted-foreground">
+              4 étapes simples pour retrouver ou rendre un objet
+            </p>
+          </div>
+          <HowItWorksIllustration />
+        </div>
+
         {/* Search Bar */}
         <div className="mb-12 relative">
           <Search className="absolute left-4 top-4 w-5 h-5 text-muted-foreground" />
@@ -193,58 +207,68 @@ const Help = () => {
 
         {/* Contact Section */}
         <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-8 lg:p-12">
-          <h2 className="font-display text-2xl font-bold text-foreground mb-2">Vous n'avez pas trouvé l'aide ?</h2>
-          <p className="text-muted-foreground mb-8">
-            Nous sommes toujours prêts à vous aider. Contactez-nous par l'un de ces moyens.
-          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Contact Info */}
+            <div>
+              <h2 className="font-display text-2xl font-bold text-foreground mb-2">Vous n'avez pas trouvé l'aide ?</h2>
+              <p className="text-muted-foreground mb-8">
+                Nous sommes toujours prêts à vous aider. Contactez-nous par l'un de ces moyens.
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Email */}
-            <a href="mailto:dioufmohametousmane@gmail.com" className="flex gap-4 group">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/30 transition-colors">
-                <Mail className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">dioufmohametousmane@gmail.com</p>
-                <p className="text-xs text-muted-foreground mt-1">Réponse sous 24h</p>
-              </div>
-            </a>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Email */}
+                <a href="mailto:dioufmohametousmane@gmail.com" className="flex gap-4 group">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/30 transition-colors">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Email</h3>
+                    <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">dioufmohametousmane@gmail.com</p>
+                    <p className="text-xs text-muted-foreground mt-1">Réponse sous 24h</p>
+                  </div>
+                </a>
 
-            {/* Phone */}
-            <a href="tel:+221774649835" className="flex gap-4 group">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/30 transition-colors">
-                <Phone className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Téléphone</h3>
-                <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">+221 77 464 98 35</p>
-                <p className="text-xs text-muted-foreground mt-1">Disponible 24/7</p>
-              </div>
-            </a>
+                {/* Phone */}
+                <a href="tel:+221774649835" className="flex gap-4 group">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/30 transition-colors">
+                    <Phone className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Téléphone</h3>
+                    <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">+221 77 464 98 35</p>
+                    <p className="text-xs text-muted-foreground mt-1">Disponible 24/7</p>
+                  </div>
+                </a>
 
-            {/* Location */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Localisation</h3>
-                <p className="text-sm text-muted-foreground">Dakar, Sénégal</p>
-                <p className="text-xs text-muted-foreground mt-1">Sénégal</p>
+                {/* Location */}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Localisation</h3>
+                    <p className="text-sm text-muted-foreground">Dakar, Sénégal</p>
+                    <p className="text-xs text-muted-foreground mt-1">Sénégal</p>
+                  </div>
+                </div>
+
+                {/* Hours */}
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">Horaires</h3>
+                    <p className="text-sm text-muted-foreground">9h - 17h (GMT+1)</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tous les jours</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Hours */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Horaires</h3>
-                <p className="text-sm text-muted-foreground">9h - 17h (GMT+1)</p>
-                <p className="text-xs text-muted-foreground mt-1">Tous les jours</p>
-              </div>
+            {/* Right: Illustration */}
+            <div className="hidden lg:flex justify-center">
+              <ContactIllustration />
             </div>
           </div>
         </div>
